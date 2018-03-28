@@ -18,6 +18,7 @@ public class UUIDCalculator {
             SocketException, UnknownHostException {
         final MD5Digest md5 = new MD5Digest();
         md5.reset();
+        System.out.println("useNetwork:"+useNetwork);
         if (useNetwork) {
             calculator.updateWithNetworkData(md5);
         }

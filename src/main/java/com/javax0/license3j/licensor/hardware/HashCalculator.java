@@ -3,6 +3,8 @@ package com.javax0.license3j.licensor.hardware;
 import org.bouncycastle.crypto.digests.MD5Digest;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Comparator;
@@ -19,19 +21,28 @@ class HashCalculator {
                                        final List<NetworkInterfaceData> networkInterfaces)
             throws UnsupportedEncodingException {
         for (final NetworkInterfaceData ni : networkInterfaces) {
-            md5.update(ni.name.getBytes("utf-8"), 0,
-                    ni.name.getBytes("utf-8").length);
+            
+        	md5.update(ni.name.getBytes("utf-8"), 0,
+        			ni.name.getBytes("utf-8").length);
             if (ni.hwAddress != null) {
                 md5.update(ni.hwAddress, 0, ni.hwAddress.length);
             }
+			
         }
     }
 
     void updateWithNetworkData(final MD5Digest md5)
             throws UnsupportedEncodingException, SocketException {
-        final List<NetworkInterfaceData> networkInterfaces = NetworkInterfaceData.gatherUsing(selector);
-        networkInterfaces.sort(Comparator.comparing(a -> a.name));
-        updateWithNetworkData(md5, networkInterfaces);
+        try {
+			InetAddress ia1 = InetAddress.getLocalHost();
+			byte[] mac = NetworkInterface.getByInetAddress(ia1).getHardwareAddress();
+			md5.update(mac,0,mac.length);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			final List<NetworkInterfaceData> networkInterfaces = NetworkInterfaceData.gatherUsing(selector);
+			networkInterfaces.sort(Comparator.comparing(a -> a.name));
+			updateWithNetworkData(md5, networkInterfaces);
+		}
     }
 
     void updateWithHostName(final MD5Digest md5)
